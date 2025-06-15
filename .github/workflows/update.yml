@@ -4,24 +4,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  update-quote:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # 🔥 this is the key to allow pushing changes!
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install jq
-        run: sudo apt-get install jq -y
+        run: sudo apt-get update && sudo apt-get install jq -y
 
-      - name: Update README with a Quote
+      - name: Get quote and update README
         run: |
           quote=$(curl -s https://zenquotes.io/api/random | jq -r '.[0].q + " — " + .[0].a')
           echo -e "\n> \"$quote\"" >> README.md
 
-      - name: Commit Changes
+      - name: Commit & push if changes
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           git add README.md
-          git diff --cached --quiet || (git commit -m "update: add quote" && git push)
+          git diff --cached --quiet || git commit -m "update: add quote"
+          git push
