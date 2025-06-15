@@ -1,1 +1,31 @@
+name: Update README with Quote
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install jq
+        run: sudo apt-get install jq -y
+
+      - name: Update README with a Quote
+        run: |
+          quote=$(curl -s https://zenquotes.io/api/random | jq -r '.[0].q + " — " + .[0].a')
+          echo -e "\n> \"$quote\"" >> README.md
+
+      - name: Commit Changes
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add README.md
+          git commit -m "update: daily quote" || echo "No changes to commit"
+          git push
 
